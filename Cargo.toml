@@ -36,6 +36,7 @@ syn = { version = "2" }
 thiserror = { version = "1.0.40" }
 wat = { version = "1.0.71" }
 ink_sandbox = { git = "https://github.com/use-ink/ink", branch = "cmichi-remove-wasm-default-to-revive" }
+ink_primitives = { git = "https://github.com/use-ink/ink", branch = "cmichi-remove-wasm-default-to-revive" }
 
 # Substrate dependencies
 

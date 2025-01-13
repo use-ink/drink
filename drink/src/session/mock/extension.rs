@@ -10,15 +10,15 @@ use crate::{
 };
 
 /// Runtime extension enabling contract call interception.
-pub(crate) struct MockingExtension<AccountId: Ord> {
+pub(crate) struct MockingExtension {
     /// Mock registry, shared with the sandbox.
     ///
     /// Potentially the runtime is executed in parallel and thus we need to wrap the registry in
     /// `Arc<Mutex>` instead of `Rc<RefCell>`.
-    pub mock_registry: Arc<Mutex<MockRegistry<AccountId>>>,
+    pub mock_registry: Arc<Mutex<MockRegistry>>,
 }
 
-impl<AccountId: Ord + Decode> InterceptingExtT for MockingExtension<AccountId> {
+impl InterceptingExtT for MockingExtension {
     fn intercept_call(
         &self,
         contract_address: Vec<u8>,

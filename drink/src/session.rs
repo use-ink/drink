@@ -9,9 +9,17 @@ use std::{
 pub use contract_transcode;
 use contract_transcode::ContractMessageTranscoder;
 use error::SessionError;
-use frame_support::{traits::fungible::Inspect, weights::Weight};
-use ink_sandbox::{api::prelude::*, pallet_balances};
-use ink_sandbox::{AccountIdFor, ContractExecResultFor, ContractInstantiateResultFor, Sandbox};
+use frame_support::{sp_runtime::traits::Bounded, traits::fungible::Inspect, weights::Weight};
+use ink_primitives::DepositLimit;
+use ink_sandbox::{
+    api::prelude::*,
+    pallet_revive::{
+        evm::{H160, U256},
+        MomentOf,
+    },
+    H256,
+};
+use ink_sandbox::{AccountIdFor, ContractExecResultFor, ContractResultInstantiate, Sandbox};
 use parity_scale_codec::Decode;
 pub use record::{EventBatch, Record};
 
@@ -40,7 +48,6 @@ use crate::{
 };
 
 type BalanceOf<R> = <<R as Config>::Currency as Inspect<AccountIdFor<R>>>::Balance;
-type HashFor<R> = <R as frame_system::Config>::Hash;
 
 /// Convenient value for an empty sequence of call/instantiation arguments.
 ///
@@ -140,10 +147,11 @@ where
 
     actor: AccountIdFor<T::Runtime>,
     gas_limit: Weight,
+    storage_deposit_limit: BalanceOf<T::Runtime>,
 
-    transcoders: TranscoderRegistry<AccountIdFor<T::Runtime>>,
+    transcoders: TranscoderRegistry,
     record: Record<T::Runtime>,
-    mocks: Arc<Mutex<MockRegistry<AccountIdFor<T::Runtime>>>>,
+    mocks: Arc<Mutex<MockRegistry>>,
 }
 
 impl<T: Sandbox> Default for Session<T>
@@ -164,6 +172,7 @@ where
             mocks,
             actor: T::default_actor(),
             gas_limit: T::default_gas_limit(),
+            storage_deposit_limit: Default::default(),
             transcoders: TranscoderRegistry::new(),
             record: Default::default(),
         }
@@ -172,7 +181,10 @@ where
 
 impl<T: Sandbox> Session<T>
 where
-    T::Runtime: Config + pallet_balances::Config,
+    T::Runtime: Config,
+    BalanceOf<T::Runtime>: Into<U256> + TryFrom<U256> + Bounded,
+    MomentOf<T::Runtime>: Into<U256>,
+    <<T as Sandbox>::Runtime as frame_system::Config>::Hash: frame_support::traits::IsType<H256>,
 {
     /// Sets a new actor and returns updated `self`.
     pub fn with_actor(self, actor: AccountIdFor<T::Runtime>) -> Self {
@@ -199,6 +211,22 @@ where
         mem::replace(&mut self.gas_limit, gas_limit)
     }
 
+    /// Sets a new gas limit and returns updated `self`.
+    pub fn with_storage_deposit_limit(self, storage_deposit_limit: BalanceOf<T::Runtime>) -> Self {
+        Self {
+            storage_deposit_limit,
+            ..self
+        }
+    }
+
+    /// Sets a new gas limit and returns the old one.
+    pub fn set_storage_deposit_limit(
+        &mut self,
+        storage_deposit_limit: BalanceOf<T::Runtime>,
+    ) -> BalanceOf<T::Runtime> {
+        mem::replace(&mut self.storage_deposit_limit, storage_deposit_limit)
+    }
+
     /// Returns currently set gas limit.
     pub fn get_gas_limit(&self) -> Weight {
         self.gas_limit
@@ -207,7 +235,7 @@ where
     /// Register a transcoder for a particular contract and returns updated `self`.
     pub fn with_transcoder(
         mut self,
-        contract_address: AccountIdFor<T::Runtime>,
+        contract_address: H160,
         transcoder: &Arc<ContractMessageTranscoder>,
     ) -> Self {
         self.set_transcoder(contract_address, transcoder);
@@ -217,7 +245,7 @@ where
     /// Registers a transcoder for a particular contract.
     pub fn set_transcoder(
         &mut self,
-        contract_address: AccountIdFor<T::Runtime>,
+        contract_address: H160,
         transcoder: &Arc<ContractMessageTranscoder>,
     ) {
         self.transcoders.register(contract_address, transcoder);
@@ -245,7 +273,7 @@ where
         contract_bytes: Vec<u8>,
         constructor: &str,
         args: &[S],
-        salt: Vec<u8>,
+        salt: Option<[u8; 32]>,
         endowment: Option<BalanceOf<T::Runtime>>,
         transcoder: &Arc<ContractMessageTranscoder>,
     ) -> Result<Self, SessionError> {
@@ -274,23 +302,28 @@ where
         contract_bytes: Vec<u8>,
         constructor: &str,
         args: &[S],
-        salt: Vec<u8>,
+        salt: Option<[u8; 32]>,
         endowment: Option<BalanceOf<T::Runtime>>,
         transcoder: &Arc<ContractMessageTranscoder>,
-    ) -> Result<AccountIdFor<T::Runtime>, SessionError> {
+    ) -> Result<H160, SessionError> {
         let data = transcoder
             .encode(constructor, args)
             .map_err(|err| SessionError::Encoding(err.to_string()))?;
 
         let result = self.record_events(|session| {
+            let origin = T::convert_account_to_origin(session.actor.clone());
+            session
+                .sandbox
+                .map_account(origin.clone())
+                .expect("cannot map");
             session.sandbox.deploy_contract(
                 contract_bytes,
                 endowment.unwrap_or_default(),
                 data,
                 salt,
-                session.actor.clone(),
+                origin,
                 session.gas_limit,
-                None,
+                DepositLimit::Balance(session.storage_deposit_limit),
             )
         });
 
@@ -299,7 +332,7 @@ where
                 Err(SessionError::DeploymentReverted)
             }
             Ok(exec_result) => {
-                let address = exec_result.account_id.clone();
+                let address = exec_result.addr.clone();
                 self.record.push_deploy_return(address.clone());
                 self.transcoders.register(address.clone(), transcoder);
 
@@ -320,9 +353,9 @@ where
         contract_file: ContractBundle,
         constructor: &str,
         args: &[S],
-        salt: Vec<u8>,
+        salt: Option<[u8; 32]>,
         endowment: Option<BalanceOf<T::Runtime>>,
-    ) -> Result<AccountIdFor<T::Runtime>, SessionError> {
+    ) -> Result<H160, SessionError> {
         self.deploy(
             contract_file.wasm,
             constructor,
@@ -339,23 +372,25 @@ where
         contract_file: ContractBundle,
         constructor: &str,
         args: &[S],
-        salt: Vec<u8>,
+        salt: Option<[u8; 32]>,
         endowment: Option<BalanceOf<T::Runtime>>,
-    ) -> Result<ContractInstantiateResultFor<T::Runtime>, SessionError> {
+    ) -> Result<ContractResultInstantiate<T::Runtime>, SessionError> {
         let data = contract_file
             .transcoder
             .encode(constructor, args)
             .map_err(|err| SessionError::Encoding(err.to_string()))?;
 
         Ok(self.sandbox.dry_run(|sandbox| {
+            let origin = T::convert_account_to_origin(self.actor.clone());
+            sandbox.map_account(origin.clone()).expect("cannot map");
             sandbox.deploy_contract(
                 contract_file.wasm,
                 endowment.unwrap_or_default(),
                 data,
                 salt,
-                self.actor.clone(),
+                origin,
                 self.gas_limit,
-                None,
+                DepositLimit::Balance(self.storage_deposit_limit),
             )
         }))
     }
@@ -368,7 +403,7 @@ where
         contract_file: ContractBundle,
         constructor: &str,
         args: &[S],
-        salt: Vec<u8>,
+        salt: Option<[u8; 32]>,
         endowment: Option<BalanceOf<T::Runtime>>,
     ) -> Result<Self, SessionError> {
         self.deploy_bundle(contract_file, constructor, args, salt, endowment)
@@ -381,10 +416,14 @@ where
     }
 
     /// Uploads a raw contract code. In case of success returns the code hash.
-    pub fn upload(&mut self, contract_bytes: Vec<u8>) -> Result<HashFor<T::Runtime>, SessionError> {
-        let result = self
-            .sandbox
-            .upload_contract(contract_bytes, self.actor.clone(), None);
+    pub fn upload(&mut self, contract_bytes: Vec<u8>) -> Result<H256, SessionError> {
+        let origin = T::convert_account_to_origin(self.actor.clone());
+        self.sandbox
+            .map_account(origin.clone())
+            .expect("cannot map");
+        let result =
+            self.sandbox
+                .upload_contract(contract_bytes, origin, self.storage_deposit_limit);
 
         result
             .map(|upload_result| upload_result.code_hash)
@@ -401,10 +440,7 @@ where
     /// Similar to `upload` but takes the contract bundle as the first argument.
     ///
     /// You can obtain it using `ContractBundle::load("some/path/your.contract")` or `local_contract_file!()`
-    pub fn upload_bundle(
-        &mut self,
-        contract_file: ContractBundle,
-    ) -> Result<HashFor<T::Runtime>, SessionError> {
+    pub fn upload_bundle(&mut self, contract_file: ContractBundle) -> Result<H256, SessionError> {
         self.upload(contract_file.wasm)
     }
 
@@ -424,7 +460,7 @@ where
     /// Calls the last deployed contract. In case of a successful call, returns `self`.
     pub fn call_with_address_and<S: AsRef<str> + Debug>(
         mut self,
-        address: AccountIdFor<T::Runtime>,
+        address: H160,
         message: &str,
         args: &[S],
         endowment: Option<BalanceOf<T::Runtime>>,
@@ -465,7 +501,7 @@ where
     /// result.
     pub fn call_with_address<S: AsRef<str> + Debug, V: Decode>(
         &mut self,
-        address: AccountIdFor<T::Runtime>,
+        address: H160,
         message: &str,
         args: &[S],
         endowment: Option<BalanceOf<T::Runtime>>,
@@ -476,7 +512,7 @@ where
     /// Performs a dry run of a contract call.
     pub fn dry_run_call<S: AsRef<str> + Debug>(
         &mut self,
-        address: AccountIdFor<T::Runtime>,
+        address: H160,
         message: &str,
         args: &[S],
         endowment: Option<BalanceOf<T::Runtime>>,
@@ -490,20 +526,22 @@ where
             .map_err(|err| SessionError::Encoding(err.to_string()))?;
 
         Ok(self.sandbox.dry_run(|sandbox| {
+            let origin = T::convert_account_to_origin(self.actor.clone());
+            sandbox.map_account(origin.clone()).expect("cannot map");
             sandbox.call_contract(
                 address,
                 endowment.unwrap_or_default(),
                 data,
-                self.actor.clone(),
+                origin,
                 self.gas_limit,
-                None,
+                DepositLimit::Balance(self.storage_deposit_limit),
             )
         }))
     }
 
     fn call_internal<S: AsRef<str> + Debug, V: Decode>(
         &mut self,
-        address: Option<AccountIdFor<T::Runtime>>,
+        address: Option<H160>,
         message: &str,
         args: &[S],
         endowment: Option<BalanceOf<T::Runtime>>,
@@ -527,13 +565,18 @@ where
             .map_err(|err| SessionError::Encoding(err.to_string()))?;
 
         let result = self.record_events(|session| {
+            let origin = T::convert_account_to_origin(session.actor.clone());
+            session
+                .sandbox
+                .map_account(origin.clone())
+                .expect("cannot map");
             session.sandbox.call_contract(
                 address,
                 endowment.unwrap_or_default(),
                 data,
-                session.actor.clone(),
+                origin,
                 session.gas_limit,
-                None,
+                DepositLimit::Balance(session.storage_deposit_limit),
             )
         });
 

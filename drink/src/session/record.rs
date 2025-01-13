@@ -3,7 +3,8 @@ use std::sync::Arc;
 use contract_transcode::{ContractMessageTranscoder, Value};
 use frame_system::Config as SysConfig;
 use ink_sandbox::{
-    pallet_revive, AccountIdFor, ContractExecResultFor, ContractInstantiateResultFor, EventRecordOf,
+    pallet_revive::{self, evm::H160},
+    ContractExecResultFor, ContractResultInstantiate, EventRecordOf,
 };
 use parity_scale_codec::{Decode, Encode};
 
@@ -23,10 +24,10 @@ use crate::{
 #[derive(frame_support::DefaultNoBound)]
 pub struct Record<Config: pallet_revive::Config> {
     /// The results of contract instantiation.
-    deploy_results: Vec<ContractInstantiateResultFor<Config>>,
+    deploy_results: Vec<ContractResultInstantiate<Config>>,
     /// The return values of contract instantiation (i.e. the addresses of the newly instantiated
     /// contracts).
-    deploy_returns: Vec<AccountIdFor<Config>>,
+    deploy_returns: Vec<H160>,
 
     /// The results of contract calls.
     call_results: Vec<ContractExecResultFor<Config>>,
@@ -39,11 +40,11 @@ pub struct Record<Config: pallet_revive::Config> {
 
 // API for `Session` to record results and events related to contract interaction.
 impl<Config: pallet_revive::Config> Record<Config> {
-    pub(super) fn push_deploy_result(&mut self, result: ContractInstantiateResultFor<Config>) {
+    pub(super) fn push_deploy_result(&mut self, result: ContractResultInstantiate<Config>) {
         self.deploy_results.push(result);
     }
 
-    pub(super) fn push_deploy_return(&mut self, return_value: AccountIdFor<Config>) {
+    pub(super) fn push_deploy_return(&mut self, return_value: H160) {
         self.deploy_returns.push(return_value);
     }
 
@@ -63,24 +64,24 @@ impl<Config: pallet_revive::Config> Record<Config> {
 // API for the end user.
 impl<Config: pallet_revive::Config> Record<Config> {
     /// Returns all the results of contract instantiations that happened during the session.
-    pub fn deploy_results(&self) -> &[ContractInstantiateResultFor<Config>] {
+    pub fn deploy_results(&self) -> &[ContractResultInstantiate<Config>] {
         &self.deploy_results
     }
 
     /// Returns the last result of contract instantiation that happened during the session. Panics
     /// if there were no contract instantiations.
-    pub fn last_deploy_result(&self) -> &ContractInstantiateResultFor<Config> {
+    pub fn last_deploy_result(&self) -> &ContractResultInstantiate<Config> {
         self.deploy_results.last().expect("No deploy results")
     }
 
     /// Returns all the return values of contract instantiations that happened during the session.
-    pub fn deploy_returns(&self) -> &[AccountIdFor<Config>] {
+    pub fn deploy_returns(&self) -> &[H160] {
         &self.deploy_returns
     }
 
     /// Returns the last return value of contract instantiation that happened during the session.
     /// Panics if there were no contract instantiations.
-    pub fn last_deploy_return(&self) -> &AccountIdFor<Config> {
+    pub fn last_deploy_return(&self) -> &H160 {
         self.deploy_returns.last().expect("No deploy returns")
     }
 

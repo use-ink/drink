@@ -1725,6 +1725,7 @@ dependencies = [
  "drink-test-macro",
  "frame-support",
  "frame-system",
+ "ink_primitives 5.1.0 (git+https://github.com/use-ink/ink?branch=cmichi-remove-wasm-default-to-revive)",
  "ink_sandbox",
  "parity-scale-codec",
  "parity-scale-codec-derive",
