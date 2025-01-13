@@ -49,7 +49,7 @@ mod tests {
     create_sandbox!(
         SandboxWithCE,
         crate::chain_extension_runtime_side::StakingExtension,
-        drink::pallet_contracts_debugging::DrinkDebug
+        drink::pallet_revive_debugging::DrinkDebug
     );
 
     /// Test that we can call chain extension from ink! contract and get a correct result.

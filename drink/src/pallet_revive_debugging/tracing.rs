@@ -1,18 +1,19 @@
-use ink_sandbox::AccountIdFor;
+use ink_sandbox::pallet_revive::evm::H160;
+use parity_scale_codec::Encode;
 
 use crate::{
-    pallet_contracts::{
+    pallet_revive::{
         debug::{CallSpan, ExportedFunction},
         Config, ExecReturnValue, Tracing,
     },
-    pallet_contracts_debugging::DrinkDebug,
+    pallet_revive_debugging::DrinkDebug,
 };
 
 impl<R: Config> Tracing<R> for DrinkDebug {
-    type CallSpan = DrinkCallSpan<AccountIdFor<R>>;
+    type CallSpan = DrinkCallSpan;
 
     fn new_call_span(
-        contract_address: &AccountIdFor<R>,
+        contract_address: &H160,
         entry_point: ExportedFunction,
         input_data: &[u8],
     ) -> Self::CallSpan {
@@ -28,18 +29,18 @@ impl<R: Config> Tracing<R> for DrinkDebug {
 ///
 /// It is created just before the call is made and `Self::after_call` is called after the call is
 /// done.
-pub struct DrinkCallSpan<AccountId> {
+pub struct DrinkCallSpan {
     /// The address of the contract that has been called.
-    pub contract_address: AccountId,
+    pub contract_address: H160,
     /// The entry point that has been called (either constructor or call).
     pub entry_point: ExportedFunction,
     /// The input data of the call.
     pub input_data: Vec<u8>,
 }
 
-impl<AccountId: parity_scale_codec::Encode> CallSpan for DrinkCallSpan<AccountId> {
+impl CallSpan for DrinkCallSpan {
     fn after_call(self, output: &ExecReturnValue) {
-        crate::pallet_contracts_debugging::runtime::contract_call_debugger::after_call(
+        crate::pallet_revive_debugging::runtime::contract_call_debugger::after_call(
             self.contract_address.encode(),
             matches!(self.entry_point, ExportedFunction::Call),
             self.input_data.to_vec(),

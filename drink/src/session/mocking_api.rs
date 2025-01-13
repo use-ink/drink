@@ -3,7 +3,7 @@ use ink_sandbox::{api::prelude::*, AccountIdFor, Sandbox};
 
 use super::Session;
 use crate::{
-    pallet_contracts::Config,
+    pallet_revive::Config,
     session::mock::ContractMock,
     // DEFAULT_GAS_LIMIT,
 };
@@ -20,7 +20,7 @@ pub trait MockingApi<R: Config> {
 
 impl<T: Sandbox> MockingApi<T::Runtime> for Session<T>
 where
-    T::Runtime: Config,
+    T::Runtime:,
 {
     fn deploy(&mut self, mock: ContractMock) -> AccountIdFor<T::Runtime> {
         // We have to deploy some contract. We use a dummy contract for that. Thanks to that, we

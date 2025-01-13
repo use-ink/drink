@@ -1,4 +1,4 @@
-use drink::pallet_contracts::chain_extension::{
+use drink::pallet_revive::chain_extension::{
     ChainExtension, Config as ContractsConfig, Environment, Ext, InitState, RetVal,
 };
 use scale::Encode;
@@ -13,7 +13,7 @@ impl<Runtime: ContractsConfig> ChainExtension<Runtime> for StakingExtension {
     fn call<E: Ext<T = Runtime>>(
         &mut self,
         env: Environment<E, InitState>,
-    ) -> drink::pallet_contracts::chain_extension::Result<RetVal> {
+    ) -> drink::pallet_revive::chain_extension::Result<RetVal> {
         // Ensure that the contract called extension method with id `41`.
         assert_eq!(env.func_id(), 41);
 

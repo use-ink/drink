@@ -2,8 +2,8 @@
 mod tests {
     use drink::{
         minimal::{MinimalSandbox, RuntimeCall},
-        pallet_balances, pallet_contracts,
-        pallet_contracts::Determinism,
+        pallet_balances, pallet_revive,
+        pallet_revive::Determinism,
         sandbox_api::prelude::*,
         AccountId32, Sandbox,
     };
@@ -55,7 +55,7 @@ mod tests {
 
         // If a particular call is not available directly in the sandbox, it can always be executed
         // via the `runtime_call` method.
-        let call_object = RuntimeCall::Contracts(pallet_contracts::Call::remove_code {
+        let call_object = RuntimeCall::Contracts(pallet_revive::Call::remove_code {
             code_hash: upload_result.code_hash,
         });
 

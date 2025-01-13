@@ -4,8 +4,8 @@ use parity_scale_codec::{Decode, Encode};
 
 use crate::{
     errors::MessageResult,
-    pallet_contracts::{chain_extension::ReturnFlags, debug::ExecResult, ExecReturnValue},
-    pallet_contracts_debugging::InterceptingExtT,
+    pallet_revive::{chain_extension::ReturnFlags, debug::ExecResult, ExecReturnValue},
+    pallet_revive_debugging::InterceptingExtT,
     session::mock::{MockRegistry, Selector},
 };
 

@@ -64,7 +64,7 @@ mod tests {
     use std::{cell::RefCell, error::Error};
 
     use drink::{
-        pallet_contracts_debugging::{TracingExt, TracingExtT},
+        pallet_revive_debugging::{TracingExt, TracingExtT},
         session::{contract_transcode::Value, Session, NO_ARGS, NO_ENDOWMENT},
         AccountId32,
     };

@@ -10,16 +10,15 @@ pub use contract_transcode;
 use contract_transcode::ContractMessageTranscoder;
 use error::SessionError;
 use frame_support::{traits::fungible::Inspect, weights::Weight};
-use ink_sandbox::{
-    api::prelude::*, AccountIdFor, ContractExecResultFor, ContractInstantiateResultFor, Sandbox,
-};
+use ink_sandbox::{api::prelude::*, pallet_balances};
+use ink_sandbox::{AccountIdFor, ContractExecResultFor, ContractInstantiateResultFor, Sandbox};
 use parity_scale_codec::Decode;
 pub use record::{EventBatch, Record};
 
 use crate::{
     minimal::MinimalSandboxRuntime,
-    pallet_contracts::{Config, Determinism},
-    pallet_contracts_debugging::{InterceptingExt, TracingExt},
+    pallet_revive::Config,
+    pallet_revive_debugging::{InterceptingExt, TracingExt},
     session::mock::MockRegistry,
 };
 
@@ -141,7 +140,6 @@ where
 
     actor: AccountIdFor<T::Runtime>,
     gas_limit: Weight,
-    determinism: Determinism,
 
     transcoders: TranscoderRegistry<AccountIdFor<T::Runtime>>,
     record: Record<T::Runtime>,
@@ -156,6 +154,7 @@ where
     fn default() -> Self {
         let mocks = Arc::new(Mutex::new(MockRegistry::new()));
         let mut sandbox = T::default();
+
         sandbox.register_extension(InterceptingExt(Box::new(MockingExtension {
             mock_registry: Arc::clone(&mocks),
         })));
@@ -165,7 +164,6 @@ where
             mocks,
             actor: T::default_actor(),
             gas_limit: T::default_gas_limit(),
-            determinism: Determinism::Enforced,
             transcoders: TranscoderRegistry::new(),
             record: Default::default(),
         }
@@ -174,7 +172,7 @@ where
 
 impl<T: Sandbox> Session<T>
 where
-    T::Runtime: Config,
+    T::Runtime: Config + pallet_balances::Config,
 {
     /// Sets a new actor and returns updated `self`.
     pub fn with_actor(self, actor: AccountIdFor<T::Runtime>) -> Self {
@@ -204,19 +202,6 @@ where
     /// Returns currently set gas limit.
     pub fn get_gas_limit(&self) -> Weight {
         self.gas_limit
-    }
-
-    /// Sets a new determinism policy and returns updated `self`.
-    pub fn with_determinism(self, determinism: Determinism) -> Self {
-        Self {
-            determinism,
-            ..self
-        }
-    }
-
-    /// Sets a new determinism policy and returns the old one.
-    pub fn set_determinism(&mut self, determinism: Determinism) -> Determinism {
-        mem::replace(&mut self.determinism, determinism)
     }
 
     /// Register a transcoder for a particular contract and returns updated `self`.
@@ -397,12 +382,9 @@ where
 
     /// Uploads a raw contract code. In case of success returns the code hash.
     pub fn upload(&mut self, contract_bytes: Vec<u8>) -> Result<HashFor<T::Runtime>, SessionError> {
-        let result = self.sandbox.upload_contract(
-            contract_bytes,
-            self.actor.clone(),
-            None,
-            self.determinism,
-        );
+        let result = self
+            .sandbox
+            .upload_contract(contract_bytes, self.actor.clone(), None);
 
         result
             .map(|upload_result| upload_result.code_hash)
@@ -515,7 +497,6 @@ where
                 self.actor.clone(),
                 self.gas_limit,
                 None,
-                self.determinism,
             )
         }))
     }
@@ -553,7 +534,6 @@ where
                 session.actor.clone(),
                 session.gas_limit,
                 None,
-                session.determinism,
             )
         });
 
