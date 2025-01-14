@@ -565,10 +565,6 @@ where
 
         let result = self.record_events(|session| {
             let origin = T::convert_account_to_origin(session.actor.clone());
-            session
-                .sandbox
-                .map_account(origin.clone())
-                .expect("cannot map");
             session.sandbox.call_contract(
                 address,
                 endowment.unwrap_or_default(),

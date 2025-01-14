@@ -15,12 +15,12 @@ repository = "https://github.com/Cardinal-Cryptography/drink"
 version = "0.18.0"
 
 [workspace.dependencies]
-anyhow = { version = "1.0.71" }
+anyhow = { version = "1.0.94" }
 cargo_metadata = { version = "0.18.1" }
 clap = { version = "4.3.4" }
-contract-build = { git = "https://github.com/chungquantin/cargo-contract.git", branch = "peter/feat-revive" }
-contract-metadata = { git = "https://github.com/chungquantin/cargo-contract.git", branch = "peter/feat-revive" }
-contract-transcode = { git = "https://github.com/chungquantin/cargo-contract.git", branch = "peter/feat-revive" }
+contract-build = { git = "https://github.com/use-ink/cargo-contract", branch = "cmichi-remove-wasm-default-to-revive" }
+contract-metadata = { git = "https://github.com/use-ink/cargo-contract", branch = "cmichi-remove-wasm-default-to-revive" }
+contract-transcode = { git = "https://github.com/use-ink/cargo-contract", branch = "cmichi-remove-wasm-default-to-revive" }
 convert_case = { version = "0.6.0" }
 crossterm = { version = "0.26.0" }
 darling = { version = "0.20.3" }
@@ -31,7 +31,7 @@ proc-macro2 = { version = "1" }
 quote = { version = "1" }
 ratatui = { version = "0.21.0" }
 scale-info = { version = "2.10.0" }
-serde_json = { version = "1.0" }
+serde_json = { version = "1.0.133" }
 syn = { version = "2" }
 thiserror = { version = "1.0.40" }
 wat = { version = "1.0.71" }

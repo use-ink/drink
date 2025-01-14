@@ -7,7 +7,7 @@ use std::{
 use cargo_metadata::{Metadata, MetadataCommand, Package};
 use contract_build::{
     BuildArtifacts, BuildMode, ExecuteArgs, Features, ImageVariant, ManifestPath, Network,
-    OptimizationPasses, OutputType, Target, UnstableFlags, Verbosity, DEFAULT_MAX_MEMORY_PAGES,
+    OptimizationPasses, OutputType, UnstableFlags, Verbosity, DEFAULT_MAX_MEMORY_PAGES,
 };
 
 use crate::bundle_provision::BundleProviderGenerator;
@@ -129,7 +129,6 @@ fn build_contract_crate(pkg: FeaturedPackage) -> (String, PathBuf) {
                 extra_lints: false,
                 output_type: OutputType::HumanReadable,
                 skip_wasm_validation: false,
-                target: Target::Wasm,
                 max_memory_pages: DEFAULT_MAX_MEMORY_PAGES,
                 image: ImageVariant::Default,
             };
