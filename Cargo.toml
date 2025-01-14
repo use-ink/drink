@@ -18,9 +18,9 @@ version = "0.18.0"
 anyhow = { version = "1.0.71" }
 cargo_metadata = { version = "0.18.1" }
 clap = { version = "4.3.4" }
-contract-build = { version = "5.0.0" }
-contract-metadata = { version = "5.0.0" }
-contract-transcode = { version = "5.0.0" }
+contract-build = { git = "https://github.com/chungquantin/cargo-contract.git", branch = "peter/feat-revive" }
+contract-metadata = { git = "https://github.com/chungquantin/cargo-contract.git", branch = "peter/feat-revive" }
+contract-transcode = { git = "https://github.com/chungquantin/cargo-contract.git", branch = "peter/feat-revive" }
 convert_case = { version = "0.6.0" }
 crossterm = { version = "0.26.0" }
 darling = { version = "0.20.3" }

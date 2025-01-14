@@ -43,6 +43,7 @@ mod tests {
     fn initialization(mut session: Session) -> Result<(), Box<dyn Error>> {
         let contract = BundleProvider::local()?;
         let init_value: bool = session
+            .with_storage_deposit_limit(1_000_000)
             .deploy_bundle_and(contract, "new", &["true"], NO_SALT, NO_ENDOWMENT)?
             .call_and("get", NO_ARGS, NO_ENDOWMENT)?
             .record()
@@ -58,6 +59,7 @@ mod tests {
     fn flipping(mut session: Session) -> Result<(), Box<dyn Error>> {
         let contract = BundleProvider::Flipper.bundle()?;
         let init_value: bool = session
+            .with_storage_deposit_limit(1_000_000)
             .deploy_bundle_and(contract, "new", &["true"], NO_SALT, NO_ENDOWMENT)?
             .call_and("flip", NO_ARGS, NO_ENDOWMENT)?
             .call_and("flip", NO_ARGS, NO_ENDOWMENT)?

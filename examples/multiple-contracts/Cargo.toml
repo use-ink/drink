@@ -7,8 +7,14 @@ repository = "https://github.com/Cardinal-Cryptography/drink"
 version = "0.1.0"
 
 [dependencies]
-ink = { version = "=5.1.0", default-features = false, features = ["ink-debug"] }
-psp22 = { git = "https://github.com/Cardinal-Cryptography/PSP22.git", branch = "ink5", default-features = false, features = ["contract", "ink-as-dependency"] }
+ink = { git = "https://github.com/use-ink/ink", branch = "cmichi-remove-wasm-default-to-revive", features = [
+    "ink-debug",
+    "unstable",
+], default-features = false }
+psp22 = { git = "https://github.com/Cardinal-Cryptography/PSP22.git", branch = "ink5", default-features = false, features = [
+    "contract",
+    "ink-as-dependency",
+] }
 
 [dev-dependencies]
 drink = { path = "../../drink" }
@@ -18,8 +24,5 @@ path = "lib.rs"
 
 [features]
 default = ["std"]
-std = [
-    "ink/std",
-    "psp22/std",
-]
+std = ["ink/std", "psp22/std"]
 ink-as-dependency = []

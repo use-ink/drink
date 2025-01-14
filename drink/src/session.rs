@@ -54,7 +54,7 @@ type BalanceOf<R> = <<R as Config>::Currency as Inspect<AccountIdFor<R>>>::Balan
 /// `session.call::<String>(.., &[], ..)`.
 pub const NO_ARGS: &[String] = &[];
 /// Convenient value for an empty salt.
-pub const NO_SALT: Vec<u8> = vec![];
+pub const NO_SALT: Option<[u8; 32]> = None;
 /// Convenient value for no endowment.
 ///
 /// Compatible with any runtime with `u128` as the balance type.
@@ -356,7 +356,7 @@ where
         endowment: Option<BalanceOf<T::Runtime>>,
     ) -> Result<H160, SessionError> {
         self.deploy(
-            contract_file.wasm,
+            contract_file.code,
             constructor,
             args,
             salt,
@@ -383,7 +383,7 @@ where
             let origin = T::convert_account_to_origin(self.actor.clone());
             sandbox.map_account(origin.clone()).expect("cannot map");
             sandbox.deploy_contract(
-                contract_file.wasm,
+                contract_file.code,
                 endowment.unwrap_or_default(),
                 data,
                 salt,
@@ -433,14 +433,14 @@ where
     ///
     /// You can obtain it using `ContractBundle::load("some/path/your.contract")` or `local_contract_file!()`
     pub fn upload_bundle_and(self, contract_file: ContractBundle) -> Result<Self, SessionError> {
-        self.upload_and(contract_file.wasm)
+        self.upload_and(contract_file.code)
     }
 
     /// Similar to `upload` but takes the contract bundle as the first argument.
     ///
     /// You can obtain it using `ContractBundle::load("some/path/your.contract")` or `local_contract_file!()`
     pub fn upload_bundle(&mut self, contract_file: ContractBundle) -> Result<H256, SessionError> {
-        self.upload(contract_file.wasm)
+        self.upload(contract_file.code)
     }
 
     /// Calls a contract with a given address. In case of a successful call, returns `self`.
