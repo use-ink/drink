@@ -7,5 +7,6 @@
 # Contracts' cargo locks
 examples/**/Cargo.lock
 
-# JetBrains IDEs
+# IDEs
 .idea/
+.vscode/
