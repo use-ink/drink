@@ -225,7 +225,12 @@ where
         mem::replace(&mut self.gas_limit, gas_limit)
     }
 
-    /// Sets a new gas limit and returns updated `self`.
+    /// Returns currently set gas limit.
+    pub fn get_gas_limit(&self) -> Weight {
+        self.gas_limit
+    }
+
+    /// Sets a new storage deposit limit and returns updated `self`.
     pub fn with_storage_deposit_limit(self, storage_deposit_limit: BalanceOf<T::Runtime>) -> Self {
         Self {
             storage_deposit_limit,
@@ -233,7 +238,7 @@ where
         }
     }
 
-    /// Sets a new gas limit and returns the old one.
+    /// Sets a new storage deposit limit and returns the old one.
     pub fn set_storage_deposit_limit(
         &mut self,
         storage_deposit_limit: BalanceOf<T::Runtime>,
@@ -241,9 +246,9 @@ where
         mem::replace(&mut self.storage_deposit_limit, storage_deposit_limit)
     }
 
-    /// Returns currently set gas limit.
-    pub fn get_gas_limit(&self) -> Weight {
-        self.gas_limit
+    /// Returns currently set storage deposit limit.
+    pub fn get_storage_deposit_limit(&self) -> BalanceOf<T::Runtime> {
+        self.storage_deposit_limit
     }
 
     /// Register a transcoder for a particular contract and returns updated `self`.
