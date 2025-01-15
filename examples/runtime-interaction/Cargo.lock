@@ -574,12 +574,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5d5dde061bd34119e902bbb2d9b90c5692635cf59fb91d582c2b68043f1b8293"
 
 [[package]]
-name = "array-init"
-version = "2.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d62b7694a562cdf5a74227903507c56ab2cc8bdd1f781ed5cb4cf9c9f810bfc"
-
-[[package]]
 name = "arrayref"
 version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1985,16 +1979,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "flipper"
-version = "0.1.0"
-dependencies = [
- "drink",
- "ink",
- "parity-scale-codec",
- "scale-info",
-]
-
-[[package]]
 name = "fnv"
 version = "1.0.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2840,26 +2824,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ink"
-version = "5.1.0"
-source = "git+https://github.com/use-ink/ink?branch=cmichi-remove-wasm-default-to-revive#8425081a782c4a811180467e007b0ff452530986"
-dependencies = [
- "derive_more 1.0.0",
- "ink_env",
- "ink_macro",
- "ink_metadata",
- "ink_prelude",
- "ink_primitives",
- "ink_storage",
- "pallet-revive-uapi",
- "parity-scale-codec",
- "polkavm-derive",
- "scale-info",
- "sp-io",
- "staging-xcm",
-]
-
-[[package]]
 name = "ink_allocator"
 version = "5.1.0"
 source = "git+https://github.com/use-ink/ink?branch=cmichi-remove-wasm-default-to-revive#8425081a782c4a811180467e007b0ff452530986"
@@ -3025,24 +2989,6 @@ dependencies = [
  "sp-core",
  "sp-externalities 0.25.0 (git+https://github.com/paritytech/polkadot-sdk?rev=645878a27115db52e5d63115699b4bbb89034067)",
  "sp-io",
-]
-
-[[package]]
-name = "ink_storage"
-version = "5.1.0"
-source = "git+https://github.com/use-ink/ink?branch=cmichi-remove-wasm-default-to-revive#8425081a782c4a811180467e007b0ff452530986"
-dependencies = [
- "array-init",
- "cfg-if",
- "derive_more 1.0.0",
- "ink_env",
- "ink_metadata",
- "ink_prelude",
- "ink_primitives",
- "ink_storage_traits",
- "pallet-revive-uapi",
- "parity-scale-codec",
- "scale-info",
 ]
 
 [[package]]
@@ -4297,6 +4243,14 @@ checksum = "fa24e92bb2a83198bb76d661a71df9f7076b8c420b8696e4d3d97d50d94479e3"
 dependencies = [
  "bytes",
  "rustc-hex",
+]
+
+[[package]]
+name = "runtime-interaction"
+version = "0.1.0"
+dependencies = [
+ "drink",
+ "wat",
 ]
 
 [[package]]
