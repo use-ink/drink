@@ -2,20 +2,23 @@
 
 #[ink::contract]
 mod balance_checker {
-    use ink::env::{
-        call::{build_call, ExecutionInput, Selector},
-        DefaultEnvironment,
+    use ink::{
+        env::{
+            call::{build_call, ExecutionInput, Selector},
+            DefaultEnvironment,
+        },
+        H160, U256,
     };
 
     #[ink(storage)]
     pub struct BalanceChecker {
-        account: AccountId,
-        token_contract: AccountId,
+        account: H160,
+        token_contract: H160,
     }
 
     impl BalanceChecker {
         #[ink(constructor)]
-        pub fn new(account: AccountId, token_contract: AccountId) -> Self {
+        pub fn new(account: H160, token_contract: H160) -> Self {
             Self {
                 account,
                 token_contract,
@@ -25,8 +28,8 @@ mod balance_checker {
         #[ink(message)]
         pub fn check(&self) -> u128 {
             build_call::<DefaultEnvironment>()
-                .call_v1(self.token_contract)
-                .transferred_value(0)
+                .call(self.token_contract)
+                .transferred_value(U256::zero())
                 .exec_input(
                     ExecutionInput::new(Selector::new(ink::selector_bytes!("PSP22::balance_of")))
                         .push_arg(self.account),

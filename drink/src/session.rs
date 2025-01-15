@@ -145,6 +145,7 @@ where
     sandbox: T,
 
     actor: AccountIdFor<T::Runtime>,
+    origin: <T::Runtime as frame_system::Config>::RuntimeOrigin,
     gas_limit: Weight,
     storage_deposit_limit: BalanceOf<T::Runtime>,
 
@@ -157,6 +158,9 @@ impl<T: Sandbox> Default for Session<T>
 where
     T::Runtime: Config,
     T: Default,
+    BalanceOf<T::Runtime>: Into<U256> + TryFrom<U256> + Bounded,
+    MomentOf<T::Runtime>: Into<U256>,
+    <<T as Sandbox>::Runtime as frame_system::Config>::Hash: frame_support::traits::IsType<H256>,
 {
     fn default() -> Self {
         let mocks = Arc::new(Mutex::new(MockRegistry::new()));
@@ -166,10 +170,15 @@ where
             mock_registry: Arc::clone(&mocks),
         })));
 
+        let actor = T::default_actor();
+        let origin = T::convert_account_to_origin(actor.clone());
+        sandbox.map_account(origin.clone()).expect("cannot map");
+
         Self {
             sandbox,
             mocks,
-            actor: T::default_actor(),
+            actor,
+            origin,
             gas_limit: T::default_gas_limit(),
             storage_deposit_limit: Default::default(),
             transcoders: TranscoderRegistry::new(),
@@ -197,7 +206,13 @@ where
 
     /// Sets a new actor and returns the old one.
     pub fn set_actor(&mut self, actor: AccountIdFor<T::Runtime>) -> AccountIdFor<T::Runtime> {
-        mem::replace(&mut self.actor, actor)
+        let actor = mem::replace(&mut self.actor, actor);
+        let origin = T::convert_account_to_origin(actor.clone());
+        self.sandbox
+            .map_account(origin.clone())
+            .expect("Failed to map actor account");
+        let _ = mem::replace(&mut self.origin, origin);
+        actor
     }
 
     /// Sets a new gas limit and returns updated `self`.
@@ -311,10 +326,6 @@ where
 
         let result = self.record_events(|session| {
             let origin = T::convert_account_to_origin(session.actor.clone());
-            session
-                .sandbox
-                .map_account(origin.clone())
-                .expect("cannot map");
             session.sandbox.deploy_contract(
                 contract_bytes,
                 endowment.unwrap_or_default(),
@@ -381,7 +392,6 @@ where
 
         Ok(self.sandbox.dry_run(|sandbox| {
             let origin = T::convert_account_to_origin(self.actor.clone());
-            sandbox.map_account(origin.clone()).expect("cannot map");
             sandbox.deploy_contract(
                 contract_file.code,
                 endowment.unwrap_or_default(),
@@ -417,9 +427,6 @@ where
     /// Uploads a raw contract code. In case of success returns the code hash.
     pub fn upload(&mut self, contract_bytes: Vec<u8>) -> Result<H256, SessionError> {
         let origin = T::convert_account_to_origin(self.actor.clone());
-        self.sandbox
-            .map_account(origin.clone())
-            .expect("cannot map");
         let result =
             self.sandbox
                 .upload_contract(contract_bytes, origin, self.storage_deposit_limit);
@@ -526,7 +533,6 @@ where
 
         Ok(self.sandbox.dry_run(|sandbox| {
             let origin = T::convert_account_to_origin(self.actor.clone());
-            sandbox.map_account(origin.clone()).expect("cannot map");
             sandbox.call_contract(
                 address,
                 endowment.unwrap_or_default(),
