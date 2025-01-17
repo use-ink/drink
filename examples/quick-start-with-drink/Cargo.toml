@@ -13,9 +13,8 @@ path = "lib.rs"
 # We use standard dependencies for an ink! smart-contract.
 
 # For debugging from contract, we enable the `ink-debug` feature of `ink` crate.
-ink = { git = "https://github.com/use-ink/ink", branch = "cmichi-remove-wasm-default-to-revive", features = [
+ink = { git = "https://github.com/use-ink/ink", features = [
     "ink-debug",
-    "unstable",
 ], default-features = false }
 scale = { package = "parity-scale-codec", version = "3", default-features = false, features = [
     "derive",
