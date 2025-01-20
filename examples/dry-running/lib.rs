@@ -44,7 +44,6 @@ mod tests {
     fn we_can_dry_run_contract_interactions(
         mut session: Session,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        session.set_storage_deposit_limit(1_000_000);
         // Firstly, let us dry-run contract instantiation with an incorrect constructor argument.
         let result = session.dry_run_deployment(
             BundleProvider::local()?,

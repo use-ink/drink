@@ -48,6 +48,7 @@ use crate::{
 
 type BalanceOf<R> = <<R as Config>::Currency as Inspect<AccountIdFor<R>>>::Balance;
 
+const DEFAULT_STORAGE_DEPOSIT_LIMIT: u32 = 1_000_000;
 /// Convenient value for an empty sequence of call/instantiation arguments.
 ///
 /// Without it, you would have to specify explicitly a compatible type, like:
@@ -180,7 +181,7 @@ where
             actor,
             origin,
             gas_limit: T::default_gas_limit(),
-            storage_deposit_limit: Default::default(),
+            storage_deposit_limit: DEFAULT_STORAGE_DEPOSIT_LIMIT.into(),
             transcoders: TranscoderRegistry::new(),
             record: Default::default(),
         }
@@ -372,7 +373,7 @@ where
         endowment: Option<BalanceOf<T::Runtime>>,
     ) -> Result<H160, SessionError> {
         self.deploy(
-            contract_file.code,
+            contract_file.binary,
             constructor,
             args,
             salt,
@@ -396,13 +397,12 @@ where
             .map_err(|err| SessionError::Encoding(err.to_string()))?;
 
         Ok(self.sandbox.dry_run(|sandbox| {
-            let origin = T::convert_account_to_origin(self.actor.clone());
             sandbox.deploy_contract(
-                contract_file.code,
+                contract_file.binary,
                 endowment.unwrap_or_default(),
                 data,
                 salt,
-                origin,
+                self.origin.clone(),
                 self.gas_limit,
                 DepositLimit::Balance(self.storage_deposit_limit),
             )
@@ -431,10 +431,11 @@ where
 
     /// Uploads a raw contract code. In case of success returns the code hash.
     pub fn upload(&mut self, contract_bytes: Vec<u8>) -> Result<H256, SessionError> {
-        let origin = T::convert_account_to_origin(self.actor.clone());
-        let result =
-            self.sandbox
-                .upload_contract(contract_bytes, origin, self.storage_deposit_limit);
+        let result = self.sandbox.upload_contract(
+            contract_bytes,
+            self.origin.clone(),
+            self.storage_deposit_limit,
+        );
 
         result
             .map(|upload_result| upload_result.code_hash)
@@ -445,14 +446,14 @@ where
     ///
     /// You can obtain it using `ContractBundle::load("some/path/your.contract")` or `local_contract_file!()`
     pub fn upload_bundle_and(self, contract_file: ContractBundle) -> Result<Self, SessionError> {
-        self.upload_and(contract_file.code)
+        self.upload_and(contract_file.binary)
     }
 
     /// Similar to `upload` but takes the contract bundle as the first argument.
     ///
     /// You can obtain it using `ContractBundle::load("some/path/your.contract")` or `local_contract_file!()`
     pub fn upload_bundle(&mut self, contract_file: ContractBundle) -> Result<H256, SessionError> {
-        self.upload(contract_file.code)
+        self.upload(contract_file.binary)
     }
 
     /// Calls a contract with a given address. In case of a successful call, returns `self`.
@@ -537,12 +538,11 @@ where
             .map_err(|err| SessionError::Encoding(err.to_string()))?;
 
         Ok(self.sandbox.dry_run(|sandbox| {
-            let origin = T::convert_account_to_origin(self.actor.clone());
             sandbox.call_contract(
                 address,
                 endowment.unwrap_or_default(),
                 data,
-                origin,
+                self.origin.clone(),
                 self.gas_limit,
                 DepositLimit::Balance(self.storage_deposit_limit),
             )

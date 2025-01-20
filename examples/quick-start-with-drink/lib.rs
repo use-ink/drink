@@ -79,7 +79,6 @@ mod tests {
         // comes with a contract, we can use the `local` method to get the bundle for it.
         let contract_bundle = BundleProvider::local()?;
 
-        session.set_storage_deposit_limit(1_000_000);
         // We can now deploy the contract.
         let _contract_address = session.deploy_bundle(
             // The bundle that we want to deploy.
@@ -120,7 +119,6 @@ mod tests {
     /// In this testcase we will see how to get and read debug logs from the contract.
     #[drink::test]
     fn get_debug_logs(mut session: Session) -> Result<(), Box<dyn std::error::Error>> {
-        session.set_storage_deposit_limit(1_000_000);
         session.deploy_bundle(
             BundleProvider::local()?,
             "new",
@@ -151,7 +149,6 @@ mod tests {
     ) -> Result<(), Box<dyn std::error::Error>> {
         let bundle = BundleProvider::local()?;
 
-        session.set_storage_deposit_limit(1_000_000);
         // We can deploy the same contract multiple times. However, we have to ensure that the
         // derived contract addresses are different. We can do this by providing using different
         // arguments for the constructor or by providing a different salt.

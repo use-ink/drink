@@ -32,10 +32,7 @@ impl MockRegistry {
     pub fn salt(&mut self) -> [u8; 32] {
         self.nonce += 1;
         let mut salt = [0u8; 32];
-
-        // Copy the bytes of `self.nonce` into the start of the `salt` array
-        let nonce_size = std::mem::size_of_val(&self.nonce);
-        salt[..nonce_size].copy_from_slice(&self.nonce.to_le_bytes());
+        salt[0] = self.nonce;
         salt
     }
 

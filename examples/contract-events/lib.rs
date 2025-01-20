@@ -47,7 +47,6 @@ mod tests {
         let bundle = BundleProvider::local()?;
 
         // Firstly, we deploy the contract and call its `flip` method.
-        session.set_storage_deposit_limit(1_000_000);
         session.deploy_bundle(bundle.clone(), "new", &["false"], None, NO_ENDOWMENT)?;
         session.call("flip", NO_ARGS, NO_ENDOWMENT)??;
 
