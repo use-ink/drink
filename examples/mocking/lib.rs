@@ -5,9 +5,12 @@ const CALLEE_SELECTOR: [u8; 4] = ink::selector_bytes!("callee");
 
 #[ink::contract]
 mod proxy {
-    use ink::env::{
-        call::{build_call, ExecutionInput},
-        DefaultEnvironment,
+    use ink::{
+        env::{
+            call::{build_call, ExecutionInput},
+            DefaultEnvironment,
+        },
+        H160, U256,
     };
 
     use crate::CALLEE_SELECTOR;
@@ -24,10 +27,10 @@ mod proxy {
 
         /// Calls `callee` with the selector `CALLEE_SELECTOR` and forwards the result.
         #[ink(message)]
-        pub fn forward_call(&self, callee: AccountId) -> (u8, u8) {
+        pub fn forward_call(&self, callee: H160) -> (u8, u8) {
             build_call::<DefaultEnvironment>()
-                .call_v1(callee)
-                .transferred_value(0)
+                .call(callee)
+                .transferred_value(U256::zero())
                 .exec_input(ExecutionInput::new(CALLEE_SELECTOR.into()))
                 .returns::<(u8, u8)>()
                 .invoke()

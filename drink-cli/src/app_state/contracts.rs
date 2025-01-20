@@ -1,14 +1,14 @@
 use std::{path::PathBuf, sync::Arc};
 
 use contract_transcode::ContractMessageTranscoder;
-use drink::AccountId32;
+use drink::pallet_revive::evm::H160;
 use ContractIndex::NoContracts;
 
 use crate::app_state::ContractIndex::CurrentContract;
 
 pub struct Contract {
     pub name: String,
-    pub address: AccountId32,
+    pub address: H160,
     pub base_path: PathBuf,
     #[allow(dead_code)]
     pub transcoder: Arc<ContractMessageTranscoder>,

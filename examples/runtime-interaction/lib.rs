@@ -2,8 +2,7 @@
 mod tests {
     use drink::{
         minimal::{MinimalSandbox, RuntimeCall},
-        pallet_balances, pallet_contracts,
-        pallet_contracts::Determinism,
+        pallet_balances, pallet_revive,
         sandbox_api::prelude::*,
         AccountId32, Sandbox,
     };
@@ -44,18 +43,15 @@ mod tests {
 
         // A few runtime calls are also available directly from the sandbox. This includes a part of
         // the contracts API.
+        let actor = MinimalSandbox::default_actor();
+        let origin = MinimalSandbox::convert_account_to_origin(actor);
         let upload_result = sandbox
-            .upload_contract(
-                wat::parse_str(CONTRACT).unwrap(),
-                MinimalSandbox::default_actor(),
-                None,
-                Determinism::Enforced,
-            )
+            .upload_contract(wat::parse_str(CONTRACT).unwrap(), origin, 0)
             .expect("Failed to upload a contract");
 
         // If a particular call is not available directly in the sandbox, it can always be executed
         // via the `runtime_call` method.
-        let call_object = RuntimeCall::Contracts(pallet_contracts::Call::remove_code {
+        let call_object = RuntimeCall::Revive(pallet_revive::Call::remove_code {
             code_hash: upload_result.code_hash,
         });
 

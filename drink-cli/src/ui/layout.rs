@@ -21,24 +21,21 @@ pub(super) fn section(title: &str) -> Block {
 pub(super) fn layout<B: Backend>(f: &mut Frame<B>, app_state: &mut AppState) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints(
-            [
-                // current env
-                Constraint::Ratio(4, 20),
-                // output / help
-                Constraint::Ratio(12, 20),
-                // user input
-                Constraint::Length(3),
-                // footer
-                Constraint::Ratio(2, 20),
-            ]
-            .as_ref(),
-        )
+        .constraints([
+            // current env
+            Constraint::Ratio(4, 20),
+            // output / help
+            Constraint::Ratio(12, 20),
+            // user input
+            Constraint::Length(3),
+            // footer
+            Constraint::Ratio(2, 20),
+        ])
         .split(f.size());
 
     let subchunks = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints([Constraint::Percentage(70), Constraint::Percentage(30)].as_ref())
+        .constraints([Constraint::Percentage(70), Constraint::Percentage(30)])
         .split(chunks[0].inner(&Margin {
             horizontal: 0,
             vertical: 0,

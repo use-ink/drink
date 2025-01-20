@@ -34,6 +34,7 @@ impl Environment for StakingEnvironment {
     type Hash = <DefaultEnvironment as Environment>::Hash;
     type Timestamp = <DefaultEnvironment as Environment>::Timestamp;
     type BlockNumber = <DefaultEnvironment as Environment>::BlockNumber;
+    type EventRecord = ();
 
     type ChainExtension = StakingExtension;
 }

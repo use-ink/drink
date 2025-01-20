@@ -46,7 +46,12 @@ pub fn build(app_state: &mut AppState) {
     }
 }
 
-pub fn deploy(app_state: &mut AppState, constructor: String, args: Vec<String>, salt: Vec<u8>) {
+pub fn deploy(
+    app_state: &mut AppState,
+    constructor: String,
+    args: Vec<String>,
+    salt: Option<[u8; 32]>,
+) {
     // Get raw contract bytes
     let Some((contract_name, contract_file)) = find_wasm_blob(&app_state.ui_state.cwd) else {
         app_state.print_error("Failed to find contract file");

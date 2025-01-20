@@ -16,8 +16,8 @@ use crate::{DrinkResult, Error};
 /// - `upload_bundle_and`
 #[derive(Clone)]
 pub struct ContractBundle {
-    /// WASM blob of the contract
-    pub wasm: Vec<u8>,
+    /// Contract's binary data.
+    pub binary: Vec<u8>,
     /// Transcoder derived from the ABI/metadata
     pub transcoder: Arc<ContractMessageTranscoder>,
 }
@@ -42,7 +42,7 @@ impl ContractBundle {
 
         let transcoder = Arc::new(ContractMessageTranscoder::new(ink_metadata));
 
-        let wasm = metadata
+        let binary = metadata
             .source
             .wasm
             .ok_or(Error::BundleLoadFailed(
@@ -50,7 +50,7 @@ impl ContractBundle {
             ))?
             .0;
 
-        Ok(Self { wasm, transcoder })
+        Ok(Self { binary, transcoder })
     }
 
     /// Load the `.contract` bundle (`contract_file_name`) located in the `project_dir`` working directory.

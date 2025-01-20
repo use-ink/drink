@@ -2,9 +2,12 @@
 
 #[ink::contract]
 mod contract {
-    use ink::env::{
-        call::{build_call, ExecutionInput, Selector},
-        DefaultEnvironment,
+    use ink::{
+        env::{
+            call::{build_call, ExecutionInput, Selector},
+            DefaultEnvironment,
+        },
+        H160, U256,
     };
 
     #[ink(storage)]
@@ -18,15 +21,10 @@ mod contract {
         }
 
         #[ink(message)]
-        pub fn outer_call(
-            &self,
-            next_callee: AccountId,
-            next_next_callee: AccountId,
-            arg: u32,
-        ) -> u32 {
+        pub fn outer_call(&self, next_callee: H160, next_next_callee: H160, arg: u32) -> u32 {
             build_call::<DefaultEnvironment>()
-                .call_v1(next_callee)
-                .transferred_value(0)
+                .call(next_callee)
+                .transferred_value(U256::zero())
                 .exec_input(
                     ExecutionInput::new(Selector::new(ink::selector_bytes!("middle_call")))
                         .push_arg(next_next_callee)
@@ -37,10 +35,10 @@ mod contract {
         }
 
         #[ink(message)]
-        pub fn middle_call(&self, next_callee: AccountId, arg: u32) -> u32 {
+        pub fn middle_call(&self, next_callee: H160, arg: u32) -> u32 {
             build_call::<DefaultEnvironment>()
-                .call_v1(next_callee)
-                .transferred_value(0)
+                .call(next_callee)
+                .transferred_value(U256::zero())
                 .exec_input(
                     ExecutionInput::new(Selector::new(ink::selector_bytes!("inner_call")))
                         .push_arg(arg),
@@ -64,19 +62,18 @@ mod tests {
     use std::{cell::RefCell, error::Error};
 
     use drink::{
-        pallet_contracts_debugging::{TracingExt, TracingExtT},
+        pallet_revive_debugging::{TracingExt, TracingExtT},
         session::{contract_transcode::Value, Session, NO_ARGS, NO_ENDOWMENT},
-        AccountId32,
     };
-    use ink::storage::traits::Storable;
+    use ink::{storage::traits::Storable, H160};
 
     #[drink::contract_bundle_provider]
     enum BundleProvider {}
 
     thread_local! {
-        static OUTER_ADDRESS:  RefCell<Option<AccountId32>> = RefCell::new(None);
-        static MIDDLE_ADDRESS:  RefCell<Option<AccountId32>> = RefCell::new(None);
-        static INNER_ADDRESS:  RefCell<Option<AccountId32>> = RefCell::new(None);
+        static OUTER_ADDRESS:  RefCell<Option<H160>> = RefCell::new(None);
+        static MIDDLE_ADDRESS:  RefCell<Option<H160>> = RefCell::new(None);
+        static INNER_ADDRESS:  RefCell<Option<H160>> = RefCell::new(None);
     }
 
     struct TestDebugger;
@@ -88,7 +85,7 @@ mod tests {
             input_data: Vec<u8>,
             result: Vec<u8>,
         ) {
-            let contract_address = AccountId32::decode(&mut contract_address.as_slice())
+            let contract_address = H160::decode(&mut contract_address.as_slice())
                 .expect("Failed to decode contract address");
             let transcoder = BundleProvider::local().unwrap().transcoder;
 
@@ -128,13 +125,14 @@ mod tests {
 
     #[drink::test]
     fn test(mut session: Session) -> Result<(), Box<dyn Error>> {
+        session.set_storage_deposit_limit(1_000_000);
         session.set_tracing_extension(TracingExt(Box::new(TestDebugger {})));
 
         let outer_address = session.deploy_bundle(
             BundleProvider::local()?,
             "new",
             NO_ARGS,
-            vec![1],
+            Some([1; 32]),
             NO_ENDOWMENT,
         )?;
         OUTER_ADDRESS.with(|a| *a.borrow_mut() = Some(outer_address.clone()));
@@ -142,7 +140,7 @@ mod tests {
             BundleProvider::local()?,
             "new",
             NO_ARGS,
-            vec![2],
+            Some([2; 32]),
             NO_ENDOWMENT,
         )?;
         MIDDLE_ADDRESS.with(|a| *a.borrow_mut() = Some(middle_address.clone()));
@@ -150,7 +148,7 @@ mod tests {
             BundleProvider::local()?,
             "new",
             NO_ARGS,
-            vec![3],
+            Some([3; 32]),
             NO_ENDOWMENT,
         )?;
         INNER_ADDRESS.with(|a| *a.borrow_mut() = Some(inner_address.clone()));

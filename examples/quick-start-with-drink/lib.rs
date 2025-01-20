@@ -43,7 +43,7 @@ mod flipper {
 #[cfg(test)]
 mod tests {
     use drink::{
-        sandbox_api::contracts_api::decode_debug_buffer,
+        sandbox_api::revive_api::decode_debug_buffer,
         session::{Session, NO_ARGS, NO_ENDOWMENT, NO_SALT},
     };
 
@@ -154,8 +154,13 @@ mod tests {
         // arguments for the constructor or by providing a different salt.
         let first_address =
             session.deploy_bundle(bundle.clone(), "new", &["true"], NO_SALT, NO_ENDOWMENT)?;
-        let _second_address =
-            session.deploy_bundle(bundle.clone(), "new", &["true"], vec![0], NO_ENDOWMENT)?;
+        let _second_address = session.deploy_bundle(
+            bundle.clone(),
+            "new",
+            &["true"],
+            Some([0; 32]),
+            NO_ENDOWMENT,
+        )?;
         let _third_address =
             session.deploy_bundle(bundle, "new", &["false"], NO_SALT, NO_ENDOWMENT)?;
 
