@@ -60,7 +60,7 @@ We give up the node layer (including networking, block production etc.), but we 
 In other words, we keep bare blockchain state in-memory, and we can interact with it directly however we want.
 
 This way, we gain full control over the runtime, sacrificing real simulation of the blockchain environment.
-However, usually, this is higly beneficial for the development process, as it allows for a much faster feedback loop, assisted with better insights into execution externalities.
+However, usually, this is highly beneficial for the development process, as it allows for a much faster feedback loop, assisted with better insights into execution externalities.
 
 ---
 
