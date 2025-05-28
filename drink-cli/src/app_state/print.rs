@@ -1,4 +1,4 @@
-use drink::{pallet_contracts::ContractResult, sandbox_api::contracts_api::decode_debug_buffer};
+use drink::pallet_revive::ContractResult;
 use ratatui::{
     style::{Color, Modifier, Style},
     text::Span,
@@ -46,15 +46,9 @@ impl AppState {
     }
 }
 
-pub fn format_contract_action<R, E>(result: &ContractResult<R, u128, E>) -> String {
-    let mut output = format!(
-        "Gas consumed: {:?}\nGas required: {:?}\nDebug buffer:\n",
+pub fn format_contract_action<R>(result: &ContractResult<R, u128>) -> String {
+    format!(
+        "Gas consumed: {:?}\nGas required: {:?}\n",
         result.gas_consumed, result.gas_required
-    );
-
-    for line in &decode_debug_buffer(&result.debug_message) {
-        output.push_str(&format!("  {line}\n"));
-    }
-
-    output
+    )
 }

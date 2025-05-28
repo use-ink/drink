@@ -2,8 +2,6 @@
 
 #[ink::contract]
 mod flipper {
-    use ink::env::debug_println;
-
     #[ink(storage)]
     pub struct Flipper {
         value: bool,
@@ -17,14 +15,11 @@ mod flipper {
 
         #[ink(message)]
         pub fn flip(&mut self) {
-            debug_println!("Previous value: `{}`", self.value);
             self.value = !self.value;
-            debug_println!("Flipped to:     `{}`", self.value);
         }
 
         #[ink(message)]
         pub fn get(&self) -> bool {
-            debug_println!("Reading value from storage");
             self.value
         }
     }

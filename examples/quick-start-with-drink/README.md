@@ -6,14 +6,14 @@ We will see how to write tests for a simple smart contract and make use of `drin
 ## Prerequisites
 
 You only need Rust installed (see [here](https://www.rust-lang.org/tools/install) for help).
-Drink is developed and tested with stable Rust 1.70 (see [toolchain file](../../rust-toolchain.toml)).
+Drink is developed and tested with stable Rust.
 
 ## Dependencies
 
 You only need the `drink` library brought into your project:
 
 ```toml
-drink = { version = "0.8" }
+drink = { version = "0.19.0-alpha" }
 ```
 
 See [Cargo.toml](Cargo.toml) for a typical cargo setup of a single-contract project.
@@ -24,7 +24,7 @@ See [Cargo.toml](Cargo.toml) for a typical cargo setup of a single-contract proj
 
 For every contract that you want to interact with from your tests, you need to create a _contract bundle_, which includes:
 
-- built contract artifact (`.wasm` file),
+- built contract artifact (`.polkavm` file),
 - contract transcoder (object based on the `.json` file, responsible for translating message arguments and results).
 
 The recommended way is to use `drink::contract_bundle_provider` macro, which will discover all the contract dependencies (including the current crate, if that is the case) and gather all contract bundles into a single registry.

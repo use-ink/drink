@@ -9,6 +9,13 @@ use drink::{sandbox_api::prelude::*, AccountId32, Weight};
 
 use crate::{app_state::AppState, cli::CliCommand};
 
+fn vec_u8_to_array_32(bytes: Vec<u8>) -> [u8; 32] {
+    let mut array = [0u8; 32];
+    let len = bytes.len().min(32);
+    array[..len].copy_from_slice(&bytes[..len]);
+    array
+}
+
 pub fn execute(app_state: &mut AppState) -> Result<()> {
     let command = app_state.ui_state.user_input.current_input().to_string();
     app_state.print_command(&command);
@@ -52,13 +59,14 @@ pub fn execute(app_state: &mut AppState) -> Result<()> {
             app_state.chain_info.gas_limit = Weight::from_parts(ref_time, proof_size);
             app_state.print("Gas limit was set");
         }
-
         CliCommand::Build => contract::build(app_state),
         CliCommand::Deploy {
             constructor,
             args,
             salt,
-        } => contract::deploy(app_state, constructor, args, salt),
+        } => {
+            contract::deploy(app_state, constructor, args, Some(vec_u8_to_array_32(salt)));
+        }
         CliCommand::Call { message, args } => contract::call(app_state, message, args),
     }
 

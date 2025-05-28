@@ -2,9 +2,9 @@
 mod tests {
     use drink::{
         minimal::{MinimalSandbox, RuntimeCall},
-        pallet_balances, pallet_contracts,
-        pallet_contracts::Determinism,
+        pallet_balances, pallet_revive,
         sandbox_api::prelude::*,
+        session::mocking_api::read_contract_binary,
         AccountId32, Sandbox,
     };
 
@@ -42,20 +42,24 @@ mod tests {
     fn we_can_work_with_the_contracts_pallet_in_low_level() {
         let mut sandbox = MinimalSandbox::default();
 
+        // Construct the path to the contract file.
+        let contract_path = std::path::Path::new(file!())
+            .parent()
+            .expect("Failed to determine the base path")
+            .join("test-resources")
+            .join("dummy.polkavm");
+
         // A few runtime calls are also available directly from the sandbox. This includes a part of
         // the contracts API.
+        let actor = MinimalSandbox::default_actor();
+        let origin = MinimalSandbox::convert_account_to_origin(actor);
         let upload_result = sandbox
-            .upload_contract(
-                wat::parse_str(CONTRACT).unwrap(),
-                MinimalSandbox::default_actor(),
-                None,
-                Determinism::Enforced,
-            )
+            .upload_contract(read_contract_binary(&contract_path), origin, 1_000_000)
             .expect("Failed to upload a contract");
 
         // If a particular call is not available directly in the sandbox, it can always be executed
         // via the `runtime_call` method.
-        let call_object = RuntimeCall::Contracts(pallet_contracts::Call::remove_code {
+        let call_object = RuntimeCall::Revive(pallet_revive::Call::remove_code {
             code_hash: upload_result.code_hash,
         });
 
@@ -63,30 +67,4 @@ mod tests {
             .runtime_call(call_object, Some(MinimalSandbox::default_actor()))
             .expect("Failed to remove a contract");
     }
-
-    /// This is just a dummy contract code, that does nothing. It is written in WAT, a text format
-    /// for WebAssembly. We need to have some valid contract bytes in order for `upload_contract`
-    /// to succeed.
-    const CONTRACT: &str = r#"
-    (module
-	(import "seal0" "seal_deposit_event" (func $seal_deposit_event (param i32 i32 i32 i32)))
-	(import "seal0" "seal_return" (func $seal_return (param i32 i32 i32)))
-	(import "env" "memory" (memory 1 1))
-
-	(func (export "deploy"))
-
-	(func (export "call")
-    (call $seal_deposit_event
-      (i32.const 0)
-      (i32.const 0)
-      (i32.const 8)
-      (i32.const 4)
-    )
-		(call $seal_return
-			(i32.const 0)
-			(i32.const 0)
-			(i32.const 4)
-		)
-	)
-)"#;
 }

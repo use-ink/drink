@@ -6,8 +6,8 @@ use std::{
 
 use cargo_metadata::{Metadata, MetadataCommand, Package};
 use contract_build::{
-    BuildArtifacts, BuildMode, ExecuteArgs, Features, ImageVariant, ManifestPath, Network,
-    OptimizationPasses, OutputType, Target, UnstableFlags, Verbosity, DEFAULT_MAX_MEMORY_PAGES,
+    BuildArtifacts, BuildMode, ExecuteArgs, Features, ImageVariant, ManifestPath,
+    MetadataArtifacts, MetadataSpec, Network, OutputType, UnstableFlags, Verbosity,
 };
 
 use crate::bundle_provision::BundleProviderGenerator;
@@ -124,21 +124,24 @@ fn build_contract_crate(pkg: FeaturedPackage) -> (String, PathBuf) {
                 network: Network::Online,
                 build_artifact: BuildArtifacts::All,
                 unstable_flags: UnstableFlags::default(),
-                optimization_passes: Some(OptimizationPasses::default()),
                 keep_debug_symbols: false,
                 extra_lints: false,
                 output_type: OutputType::HumanReadable,
-                skip_wasm_validation: false,
-                target: Target::Wasm,
-                max_memory_pages: DEFAULT_MAX_MEMORY_PAGES,
+                metadata_spec: MetadataSpec::Ink,
                 image: ImageVariant::Default,
             };
 
             let result = contract_build::execute(args).expect("Error building contract");
-            let bundle_path = result
+            let bundle_path = match result
                 .metadata_result
                 .expect("Metadata should have been generated")
-                .dest_bundle;
+            {
+                MetadataArtifacts::Ink(ink_metadata_artifacts) => {
+                    ink_metadata_artifacts.dest_bundle
+                }
+                // TODO: Support Solidity compatibility
+                MetadataArtifacts::Solidity(_) => unimplemented!(),
+            };
 
             let new_entry = (pkg.package.name.clone(), bundle_path);
             todo.insert(new_entry.clone());

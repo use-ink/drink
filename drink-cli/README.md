@@ -1,6 +1,6 @@
 <h1 align="center"> DRink! CLI </h1>
 
-https://github.com/Cardinal-Cryptography/drink/assets/27450471/4a45ef8a-a7ec-4a2f-84ab-0a2a36c1cb4e
+https://github.com/use-ink/drink/assets/27450471/4a45ef8a-a7ec-4a2f-84ab-0a2a36c1cb4e
 
 We provide this simple command line tool to help you play with your local contracts in a convenient way.
 
@@ -11,7 +11,7 @@ All other dependencies are managed by Cargo and will be installed upon running `
 
 # Running DRInk! CLI
 
-When you run the binary (`cargo run --release`) you'll see a DRink! TUI. 
+When you run the binary (`cargo run --release`) you'll see a DRink! TUI.
 You can also choose to start from a specific path by supplying the `--path` argument like:
 ```bash
 cargo run --release -- --path <absolute path to e.g. example/flipper>

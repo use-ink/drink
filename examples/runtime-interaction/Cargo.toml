@@ -3,7 +3,7 @@ name = "runtime-interaction"
 authors = ["Cardinal"]
 edition = "2021"
 homepage = "https://alephzero.org"
-repository = "https://github.com/Cardinal-Cryptography/drink"
+repository = "https://github.com/use-ink/drink"
 version = "0.1.0"
 
 [lib]
