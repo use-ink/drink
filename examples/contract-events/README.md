@@ -25,7 +25,7 @@ let last_call_value = record.last_call_return_decoded::<CustomType>();
 as well as the events that have been emitted by contracts:
 
 ```rust
-// `last_event_batch` returns the batch of runtime events that have been emitted during last contract interaction.
+// `last_event_batch` returns the batch of runtime events that have been emitted during the last contract interaction.
 let last_event_batch = record.last_event_batch();
 // We can filter out raw events emitted by contracts with `contract_events` method.
 let contract_events_data = last_event_batch.contract_events();

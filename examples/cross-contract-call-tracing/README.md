@@ -1,6 +1,6 @@
-# Cross contract call tracing
+# Cross-contract call tracing
 
-This example shows how you can trace and debug cross contract calls.
+This example shows how you can trace and debug cross-contract calls.
 
 ## Scenario
 
