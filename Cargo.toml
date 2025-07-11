@@ -1,7 +1,7 @@
 [workspace]
 resolver = "2"
 
-members = ["drink", "drink/test-macro", "drink-cli"]
+members = ["drink", "drink/test-macro"]
 
 exclude = ["examples/"]
 

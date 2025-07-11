@@ -66,7 +66,7 @@ However, usually, this is higly beneficial for the development process, as it al
 
 # How to use DRink!?
 
-You can use DRink! in three ways:
+You can use DRink! in two ways:
 
 ## Directly as a library
 
@@ -93,16 +93,4 @@ to your test function and you have just switched from E2E testcase to quasi-E2E 
 
 For a full example check out [ink! repository](https://github.com/paritytech/ink/blob/master/integration-tests/e2e-runtime-only-backend/lib.rs).
 
-## With a command line tool
 
-We provide a CLI which puts DRink! behind friendly TUI.
-Below you can find a short demo of how it works.
-For more details, consult [its README](drink-cli/README.md).
-
-https://github.com/use-ink/drink/assets/27450471/4a45ef8a-a7ec-4a2f-84ab-0a2a36c1cb4e
-
-Similarly to `drink` library, `drink-cli` is published to [crates.io](https://crates.io/crates/drink-cli) as well.
-You can install it with:
-```shell
-cargo install drink-cli
-```
