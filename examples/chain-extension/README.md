@@ -1,5 +1,7 @@
 # Testing a chain extension
 
+TODO: Replace with precompile example since chain extensions are deprecated in pallet-revive.
+
 This example shows how you can use `drink` to test a chain extension.
 
 From the perspective of a contract implementation or writing tests there is nothing special (i.e., more than usual) that you have to do to interact with a chain extension.

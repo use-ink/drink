@@ -1,4 +1,4 @@
-[![Rust checks](https://github.com/Cardinal-Cryptography/drink/actions/workflows/rust-checks.yml/badge.svg)](https://github.com/Cardinal-Cryptography/drink/actions/workflows/rust-checks.yml)
+[![Rust checks](https://github.com/use-ink/drink/actions/workflows/rust-checks.yml/badge.svg)](https://github.com/use-ink/drink/actions/workflows/rust-checks.yml)
 [![Built for ink!](https://raw.githubusercontent.com/paritytech/ink/master/.images/built-for-ink.svg)](https://github.com/paritytech/ink)
 
 <h1 align="center"> DRink! </h1>
@@ -75,7 +75,7 @@ Check our helpful and verbose examples in the [examples](examples) directory.
 
 `drink` library is continuously published to [crates.io](https://crates.io/crates/drink), so you can use it in your project with either `cargo add drink` or by adding the following line to your `Cargo.toml`:
 ```toml
-drink = { version = "0.8" }
+drink = { version = "0.19.0-alpha" }
 ```
 
 Full library documentation is available at: https://docs.rs/drink.
@@ -99,7 +99,7 @@ We provide a CLI which puts DRink! behind friendly TUI.
 Below you can find a short demo of how it works.
 For more details, consult [its README](drink-cli/README.md).
 
-https://github.com/Cardinal-Cryptography/drink/assets/27450471/4a45ef8a-a7ec-4a2f-84ab-0a2a36c1cb4e
+https://github.com/use-ink/drink/assets/27450471/4a45ef8a-a7ec-4a2f-84ab-0a2a36c1cb4e
 
 Similarly to `drink` library, `drink-cli` is published to [crates.io](https://crates.io/crates/drink-cli) as well.
 You can install it with:

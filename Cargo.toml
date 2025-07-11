@@ -1,32 +1,26 @@
 [workspace]
 resolver = "2"
 
-members = [
-    "drink",
-    "drink/test-macro",
-    "drink-cli",
-]
+members = ["drink", "drink/test-macro", "drink-cli"]
 
-exclude = [
-    "examples/",
-]
+exclude = ["examples/"]
 
 [workspace.package]
-authors = ["Cardinal"]
+authors = ["Cardinal", "Use Ink <ink@use.ink>"]
 edition = "2021"
-homepage = "https://github.com/Cardinal-Cryptography/drink"
+homepage = "https://github.com/use-ink/drink"
 license = "Apache-2.0"
 readme = "README.md"
-repository = "https://github.com/Cardinal-Cryptography/drink"
-version = "0.18.0"
+repository = "https://github.com/use-ink/drink"
+version = "0.19.0-alpha"
 
 [workspace.dependencies]
-anyhow = { version = "1.0.71" }
+anyhow = { version = "1.0.94" }
 cargo_metadata = { version = "0.18.1" }
 clap = { version = "4.3.4" }
-contract-build = { version = "5.0.0" }
-contract-metadata = { version = "5.0.0" }
-contract-transcode = { version = "5.0.0" }
+contract-build = { version = "6.0.0-alpha" }
+contract-metadata = { version = "6.0.0-alpha" }
+contract-transcode = { version = "6.0.0-alpha" }
 convert_case = { version = "0.6.0" }
 crossterm = { version = "0.26.0" }
 darling = { version = "0.20.3" }
@@ -37,19 +31,20 @@ proc-macro2 = { version = "1" }
 quote = { version = "1" }
 ratatui = { version = "0.21.0" }
 scale-info = { version = "2.10.0" }
-serde_json = { version = "1.0" }
+serde_json = { version = "1.0.133" }
 syn = { version = "2" }
 thiserror = { version = "1.0.40" }
 wat = { version = "1.0.71" }
-ink_sandbox = { version = "5.1.0" }
+ink_sandbox = { version = "6.0.0-alpha" }
+ink_primitives = { version = "6.0.0-alpha" }
 
 # Substrate dependencies
 
-frame-support = { version = "32.0.0"}
-frame-system = { version = "32.0.0" }
-sp-runtime-interface = { version = "27.0.0" }
+frame-system = { version = "40.1.0" }
+frame-support = { version = "40.1.0" }
+sp-runtime-interface = { version = "29.0.1" }
 
 # Local dependencies
 
-drink = { version = "=0.18.0", path = "drink" }
-drink-test-macro = { version = "=0.18.0", path = "drink/test-macro" }
+drink = { version = "=0.19.0-alpha", path = "drink" }
+drink-test-macro = { version = "=0.19.0-alpha", path = "drink/test-macro" }

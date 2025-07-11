@@ -4,7 +4,6 @@
 #![warn(missing_docs)]
 
 pub mod errors;
-pub mod pallet_contracts_debugging;
 #[cfg(feature = "session")]
 pub mod session;
 
@@ -13,7 +12,7 @@ pub use drink_test_macro::{contract_bundle_provider, test};
 pub use errors::Error;
 pub use frame_support;
 pub use ink_sandbox::{
-    api as sandbox_api, create_sandbox, pallet_balances, pallet_contracts, pallet_timestamp,
+    api as sandbox_api, create_sandbox, pallet_balances, pallet_revive, pallet_timestamp,
     sp_externalities, AccountId32, DispatchError, Sandbox, Ss58Codec, Weight,
 };
 #[cfg(feature = "session")]
@@ -27,10 +26,5 @@ pub type DrinkResult<T> = std::result::Result<T, Error>;
 pub mod minimal {
     use ink_sandbox::create_sandbox;
 
-    // create_sandbox!(MinimalSandbox);
-    create_sandbox!(
-        MinimalSandbox,
-        (),
-        crate::pallet_contracts_debugging::DrinkDebug
-    );
+    create_sandbox!(MinimalSandbox);
 }

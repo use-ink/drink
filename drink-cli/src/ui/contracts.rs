@@ -23,8 +23,9 @@ pub(super) fn build(app_state: &mut AppState) -> impl Widget {
                 _ => Style::default(),
             };
 
+            let address = format!("{:?}", contract.address);
             ListItem::new(Line::from(Span::styled(
-                format!("{} / {}", contract.name, &contract.address.to_string()[..8],),
+                format!("{} / {}", contract.name, &address[..8],),
                 style,
             )))
         })

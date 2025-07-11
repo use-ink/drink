@@ -10,7 +10,8 @@
 /// logs from the contract.
 #[ink::contract]
 mod flipper {
-    use ink::env::debug_println;
+    // TODO: Requires `debug_println` in `ink_env`.
+    // use ink::env::debug_println;
 
     #[ink(storage)]
     pub struct Flipper {
@@ -20,20 +21,24 @@ mod flipper {
     impl Flipper {
         #[ink(constructor)]
         pub fn new(init: bool) -> Self {
-            debug_println!("Initializing contract with: `{init}`");
+            // TODO: Requires `debug_println` in `ink_env`.
+            // debug_println!("Initializing contract with: `{init}`");
             Self { value: init }
         }
 
         #[ink(message)]
         pub fn flip(&mut self) {
-            debug_println!("Previous value: `{}`", self.value);
+            // TODO: Requires `debug_println` in `ink_env`.
+            // debug_println!("Previous value: `{}`", self.value);
             self.value = !self.value;
-            debug_println!("Flipped to:     `{}`", self.value);
+            // TODO: Requires `debug_println` in `ink_env`.
+            // debug_println!("Flipped to:     `{}`", self.value);
         }
 
         #[ink(message)]
         pub fn get(&self) -> bool {
-            debug_println!("Reading value from storage");
+            // TODO: Requires `debug_println` in `ink_env`.
+            // debug_println!("Reading value from storage");
             self.value
         }
     }
@@ -43,7 +48,7 @@ mod flipper {
 #[cfg(test)]
 mod tests {
     use drink::{
-        sandbox_api::contracts_api::decode_debug_buffer,
+        sandbox_api::revive_api::decode_debug_buffer,
         session::{Session, NO_ARGS, NO_ENDOWMENT, NO_SALT},
     };
 
@@ -116,31 +121,33 @@ mod tests {
         Ok(())
     }
 
-    /// In this testcase we will see how to get and read debug logs from the contract.
-    #[drink::test]
-    fn get_debug_logs(mut session: Session) -> Result<(), Box<dyn std::error::Error>> {
-        session.deploy_bundle(
-            BundleProvider::local()?,
-            "new",
-            &["true"],
-            NO_SALT,
-            NO_ENDOWMENT,
-        )?;
+    // TODO: Deprecated due to `pallet-revive`. There is no `debug_message`.
+    //
+    // /// In this testcase we will see how to get and read debug logs from the contract.
+    // #[drink::test]
+    // fn get_debug_logs(mut session: Session) -> Result<(), Box<dyn std::error::Error>> {
+    //     session.deploy_bundle(
+    //         BundleProvider::local()?,
+    //         "new",
+    //         &["true"],
+    //         NO_SALT,
+    //         NO_ENDOWMENT,
+    //     )?;
 
-        // `deploy_bundle` returns just a contract address. If we are interested in more details
-        // about last operation (either deploy or call), we can get a `Record` object and use its
-        // `last_deploy_result` (or analogously `last_call_result`) method, which will provide us
-        // with a full report from the last contract interaction.
-        //
-        // In particular, we can get the decoded debug buffer from the contract. The buffer is
-        // just a vector of bytes, which we can decode using the `decode_debug_buffer` function.
-        let decoded_buffer = &session.record().last_deploy_result().debug_message;
-        let encoded_buffer = decode_debug_buffer(decoded_buffer);
+    //     // `deploy_bundle` returns just a contract address. If we are interested in more details
+    //     // about last operation (either deploy or call), we can get a `Record` object and use its
+    //     // `last_deploy_result` (or analogously `last_call_result`) method, which will provide us
+    //     // with a full report from the last contract interaction.
+    //     //
+    //     // In particular, we can get the decoded debug buffer from the contract. The buffer is
+    //     // just a vector of bytes, which we can decode using the `decode_debug_buffer` function.
+    //     let decoded_buffer = &session.record().last_deploy_result().debug_message;
+    //     let encoded_buffer = decode_debug_buffer(decoded_buffer);
 
-        assert_eq!(encoded_buffer, vec!["Initializing contract with: `true`"]);
+    //     assert_eq!(encoded_buffer, vec!["Initializing contract with: `true`"]);
 
-        Ok(())
-    }
+    //     Ok(())
+    // }
 
     /// In this testcase we will see how to work with multiple contracts.
     #[drink::test]
@@ -154,8 +161,13 @@ mod tests {
         // arguments for the constructor or by providing a different salt.
         let first_address =
             session.deploy_bundle(bundle.clone(), "new", &["true"], NO_SALT, NO_ENDOWMENT)?;
-        let _second_address =
-            session.deploy_bundle(bundle.clone(), "new", &["true"], vec![0], NO_ENDOWMENT)?;
+        let _second_address = session.deploy_bundle(
+            bundle.clone(),
+            "new",
+            &["true"],
+            Some([0; 32]),
+            NO_ENDOWMENT,
+        )?;
         let _third_address =
             session.deploy_bundle(bundle, "new", &["false"], NO_SALT, NO_ENDOWMENT)?;
 

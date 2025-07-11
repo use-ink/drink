@@ -4,7 +4,7 @@ use std::{
     sync::Arc,
 };
 
-use contract_build::{BuildMode, ExecuteArgs, ManifestPath, OptimizationPasses, Verbosity};
+use contract_build::{BuildMode, ExecuteArgs, ManifestPath, Verbosity};
 use contract_transcode::ContractMessageTranscoder;
 
 use crate::{
@@ -24,14 +24,13 @@ fn build_result(app_state: &mut AppState) -> Result<String, BuildError> {
     let args = ExecuteArgs {
         manifest_path,
         build_mode: BuildMode::Release,
-        optimization_passes: Some(OptimizationPasses::default()),
         verbosity: Verbosity::Quiet,
         ..Default::default()
     };
 
     contract_build::execute(args)
         .map_err(|err| BuildError::BuildFailed { err })?
-        .dest_wasm
+        .dest_binary
         .ok_or(BuildError::WasmNotGenerated)?
         .canonicalize()
         .map_err(|err| BuildError::InvalidDestPath { err })
@@ -46,9 +45,14 @@ pub fn build(app_state: &mut AppState) {
     }
 }
 
-pub fn deploy(app_state: &mut AppState, constructor: String, args: Vec<String>, salt: Vec<u8>) {
+pub fn deploy(
+    app_state: &mut AppState,
+    constructor: String,
+    args: Vec<String>,
+    salt: Option<[u8; 32]>,
+) {
     // Get raw contract bytes
-    let Some((contract_name, contract_file)) = find_wasm_blob(&app_state.ui_state.cwd) else {
+    let Some((contract_name, contract_file)) = find_contract_blob(&app_state.ui_state.cwd) else {
         app_state.print_error("Failed to find contract file");
         return;
     };
@@ -104,7 +108,7 @@ pub fn call(app_state: &mut AppState, message: String, args: Vec<String>) {
         return;
     };
 
-    let address = contract.address.clone();
+    let address = contract.address;
     match app_state
         .session
         .call_with_address::<_, ()>(address, &message, &args, None)
@@ -118,20 +122,20 @@ pub fn call(app_state: &mut AppState, message: String, args: Vec<String>) {
     }
 }
 
-fn find_wasm_blob(cwd: &Path) -> Option<(String, PathBuf)> {
+fn find_contract_blob(cwd: &Path) -> Option<(String, PathBuf)> {
     let Ok(entries) = fs::read_dir(cwd.join("target/ink")) else {
         return None;
     };
     let file = entries
         .into_iter()
         .filter_map(|e| e.ok())
-        .find(|e| e.path().extension().unwrap_or_default() == "wasm")?;
+        .find(|e| e.path().extension().unwrap_or_default() == "polkavm")?;
 
     let raw_name = file
         .file_name()
         .into_string()
         .expect("Invalid file name")
-        .strip_suffix(".wasm")
+        .strip_suffix(".polkavm")
         .expect("We have just checked file extension")
         .to_string();
 
